@@ -19,6 +19,7 @@ class CreateTanggapanTable extends Migration
             $table->date('tgl_tanggapan');
             $table->text('tanggapan');
             $table->integer('id_petugas');
+            $table->enum('status_laporan', ['valid', 'hoax'])->nullable();
             $table->timestamps();
 
             // relationship with pengaduan table

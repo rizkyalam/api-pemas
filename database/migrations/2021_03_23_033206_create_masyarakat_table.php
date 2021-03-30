@@ -19,6 +19,7 @@ class CreateMasyarakatTable extends Migration
             $table->string('username', 25)->unique();
             $table->string('password', 32);
             $table->string('telp', 13);
+            $table->string('foto');
             $table->timestamps();
         });
     }
