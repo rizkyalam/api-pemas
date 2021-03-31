@@ -2,70 +2,40 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Masyarakat;
-use Exception;
+use App\Models\Petugas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Exception;
 
-class MasyarakatController extends Controller
+class PetugasController extends Controller
 {
     /**
-     * Display all data Masyarakat.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show_all()
-    {
-        $data = Masyarakat::all();
-
-        return response()->json($data, 200);
-    }
-
-    /**
-     * Display once of data Masyarakat
-     * 
-     * @param int $nik
-     * @return \Illuminate\Http\Response
-     */
-    public function show_once($nik)
-    {
-        $data = Masyarakat::firstWhere('nik', $nik);
-
-        return response()->json($data);
-    }
-
-    /**
-     * Store a new data Masyarakat
+     * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {                
+    {
         try {
             $request->validate([
-                'nik'       => 'required|unique:masyarakat,nik|max:16',
-                'nama'      => 'required|max:35',
-                'username'  => 'required|unique:users,username|max:25',
-                'password1' => 'required|min:4|max:32|same:password2',
-                'password2' => 'required|min:4|max:32|same:password1',
-                'telp'      => 'max:13',
-                'foto'      => 'mimes:jpeg,png,jpg,gif,svg|max:1024'
+                'nama_petugas'  => 'required|max:35',
+                'username'      => 'required|unique:users,username|max:25',
+                'password1'     => 'required|min:4|max:32|same:password2',
+                'password2'     => 'required|min:4|max:32|same:password1',
+                'telp'          => 'max:13',
+                'level'         => 'required|in:admin,petugas'
             ]);
     
-            $data = Masyarakat::create([
-                'nik'  => $request->nik,
-                'nama' => $request->nama,
+            Petugas::create([
+                'nama_petugas' => $request->nama_petugas,
                 'telp' => $request->telp,
-                'foto' => $request->foto
-            ]);
-
-            $data->users()->create([
+                'level' => $request->level
+            ])->users()->create([
                 'username' => $request->username,
                 'password' => Hash::make($request->password1)
             ]);
-
+    
             return response()->json([
                 'status'  => true,
                 'message' => 'Akun berhasil di buat',
@@ -78,10 +48,34 @@ class MasyarakatController extends Controller
             ], 500);
             
         }
-    }    
+    }
 
     /**
-     * Update the profile account of Masyarakat.
+     * Display all data Petugas.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function show_all()
+    {
+        $data = Petugas::all();
+
+        return response()->json($data, 200);
+    }
+
+    /**
+     * Display once of data Petugas.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function show_once($id_petugas)
+    {
+        $data = Petugas::firstWhere('id_petugas', $id_petugas);
+
+        return response()->json($data);
+    }
+
+    /**
+     * Update the profile account of petugas.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -90,15 +84,16 @@ class MasyarakatController extends Controller
     {
         try {
             $request->validate([
-                'nik'       => 'required',
-                'username'  => 'required|unique:masyarakat,username|max:25',
-                'telp'      => 'max:13'
+                'id_petugas'    => 'required',
+                'username'      => 'unique:petugas,username|max:25',
+                'telp'          => 'max:13',
+                'level'         => 'in:admin,petugas'
             ]);
 
-            Masyarakat::where('nik', $request->nik)->update([
-                'nik'      => $request->nik,
+            Petugas::where('id_petugas', $request->id_petugas)->update([
                 'username' => $request->username,
-                'telp'     => $request->telp
+                'telp'     => $request->telp,
+                'level'    => $request->level
             ]);
 
             return response()->json([
@@ -116,28 +111,29 @@ class MasyarakatController extends Controller
     }
 
     /**
-     * Update the password account of Masyarakat.
+     * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Petugas  $petugas
      * @return \Illuminate\Http\Response
      */
-    public function update_password(Request $request)
+    public function update_password(Request $request, Petugas $petugas)
     {
         try {
             $request->validate([
-                'nik'           => 'required',
+                'id_petugas'    => 'required',
                 'old_password'  => 'required',
                 'new_password1' => 'required|min:4|max:32|same:new_password2',
                 'new_password2' => 'required|min:4|max:32|same:new_password1',
             ]);
 
-            $data = Masyarakat::firstWhere('nik', $request->nik);
+            $data = Petugas::where('id_petugas', $request->id_petugas)->first();
 
             // cek password lama
             $check = Hash::check($request->old_password, $data->password);
 
             if ($check) {
-                $data->where('nik', $request->nik)->update([
+                $data->update([
                     'password' => $request->new_password1
                 ]);
             } else {
@@ -159,14 +155,15 @@ class MasyarakatController extends Controller
     }
 
     /**
-     * Remove the specified data Masyarakat by NIk
+     * Remove the specified resource from storage.
      *
+     * @param  \App\Models\Petugas  $petugas
      * @return \Illuminate\Http\Response
      */
-    public function destroy($nik)
+    public function destroy($id_petugas)
     {
         try {
-            Masyarakat::where('nik', $nik)->delete();
+            Petugas::where('id_petugas', $id_petugas)->delete();
 
             return response()->json([
                 'status'  => true,

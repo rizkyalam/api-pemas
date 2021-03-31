@@ -5,25 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Masyarakat extends Model
+class Petugas extends Model
 {
     use HasFactory;
 
-    protected $table = 'masyarakat';
-    protected $primaryKey = 'id_masyarakat';
-    protected $fillable = [
-        'nik',
-        'nama',
+    protected $table = 'petugas';
+    protected $primaryKey = 'id_petugas';
+    protected $fillable = [        
+        'nama_petugas',
+        'username',
+        'password',
         'telp',
+        'level'
     ];
     protected $hidden = [
         'password'
     ];
-
-    public function reports()
-    {
-        return $this->hasMany(Pengaduan::class, 'nik', 'nik');
-    }
 
     public function users()
     {
