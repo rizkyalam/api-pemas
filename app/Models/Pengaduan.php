@@ -13,13 +13,13 @@ class Pengaduan extends Model
     protected $primaryKey = 'id_pengaduan';
     protected $fillable = [        
         'tgl_pengaduan',
-        'nik',
+        'id_masyarakat',
         'isi_laporan',
         'foto'
     ];
 
     public function masyarakat()
     {
-        return $this->belongsTo(Masyarakat::class, 'nik', 'nik');
+        return $this->belongsTo(Masyarakat::class, 'id_masyarakat', 'id_masyarakat');
     }
 }

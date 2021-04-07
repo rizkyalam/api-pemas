@@ -15,10 +15,10 @@ class MasyarakatSeeder extends Seeder
     public function run()
     {
         DB::table('masyarakat')->insert([            
-            'nik'  => random_int(0, 99999999),
+            'nik'  => 1234567891012141,
             'nama' => 'Abdul Aziz',
             'telp' => '081' . random_int(0, 99999999),
-            'foto' => null
+            'foto' => 'demo.png'
         ]);
     }
 }

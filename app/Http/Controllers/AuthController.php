@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\Models\Masyarakat;
+use App\Models\Petugas;
 
 class AuthController extends Controller
 {
@@ -40,7 +42,36 @@ class AuthController extends Controller
      */
     public function me()
     {        
-        return response()->json(Auth::user());
+        $user = Auth::user();
+        $people_type = explode('\\', $user->people_type);
+        
+        if($people_type[2] === 'Masyarakat') {
+            $masyarakat = Masyarakat::find($user->people_id);
+
+            $data = [
+                'id_users' => $user->id,
+                'id_masyarakat' => $user->people_id,
+                'username' => $user->username,
+                'nama' => $masyarakat->nama,
+                'nik' => $masyarakat->nik,
+                'telp' => $masyarakat->telp,
+                'foto' => $masyarakat->foto,
+                'level' => 'masyarakat'
+            ];
+        } else if ($people_type[2] === 'Petugas') {
+            $petugas = Petugas::find($user->people_id);
+
+            $data = [
+                'id_users' => $user->id,
+                'id_petugas' => $user->people_id,
+                'username' => $user->username,
+                'nama' => $petugas->nama_petugas,
+                'telp' => $petugas->telp,
+                'level' => $petugas->level
+            ];
+        }
+
+        return response()->json($data);
     }
 
     /**

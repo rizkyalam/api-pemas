@@ -15,16 +15,16 @@ class CreatePengaduanTable extends Migration
     {
         Schema::create('pengaduan', function (Blueprint $table) {
             $table->increments('id_pengaduan');
+            $table->integer('id_masyarakat')->unsigned();
             $table->date('tgl_pengaduan');
-            $table->char('nik', 16);
             $table->text('isi_laporan');
             $table->string('foto')->nullable();
             $table->enum('status', ['0', 'proses', 'selesai']);
             $table->timestamps();
 
             // relationship with masyarakat table
-            $table->foreign('nik')
-                  ->references('nik')
+            $table->foreign('id_masyarakat')
+                  ->references('id_masyarakat')
                   ->on('masyarakat')
                   ->onUpdate('cascade')
                   ->onDelete('cascade');

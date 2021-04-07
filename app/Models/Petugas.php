@@ -12,14 +12,9 @@ class Petugas extends Model
     protected $table = 'petugas';
     protected $primaryKey = 'id_petugas';
     protected $fillable = [        
-        'nama_petugas',
-        'username',
-        'password',
+        'nama_petugas',        
         'telp',
         'level'
-    ];
-    protected $hidden = [
-        'password'
     ];
 
     public function users()

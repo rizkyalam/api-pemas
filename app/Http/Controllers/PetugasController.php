@@ -6,6 +6,7 @@ use App\Models\Petugas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class PetugasController extends Controller
 {
@@ -57,7 +58,18 @@ class PetugasController extends Controller
      */
     public function show_all()
     {
-        $data = Petugas::all();
+        $petugas = Petugas::with('users')->get();
+
+        foreach ($petugas as $row) {
+            $data[] = [
+                'id_petugas' => $row->id_petugas,
+                'id_users'      => $row->users[0]->id,
+                'username'      => $row->users[0]->username,
+                'nama_petugas'  => $row->nama_petugas,
+                'telp'          => $row->telp,
+                'level'         => $row->level,
+            ];
+        }
 
         return response()->json($data, 200);
     }
@@ -85,15 +97,15 @@ class PetugasController extends Controller
         try {
             $request->validate([
                 'id_petugas'    => 'required',
-                'username'      => 'unique:petugas,username|max:25',
+                'nama_petugas'  => 'required',
                 'telp'          => 'max:13',
-                'level'         => 'in:admin,petugas'
+                'level'         => 'required|in:admin,petugas'
             ]);
 
             Petugas::where('id_petugas', $request->id_petugas)->update([
-                'username' => $request->username,
-                'telp'     => $request->telp,
-                'level'    => $request->level
+                'nama_petugas' => $request->nama_petugas,
+                'telp'         => $request->telp,
+                'level'        => $request->level
             ]);
 
             return response()->json([
@@ -160,15 +172,21 @@ class PetugasController extends Controller
      * @param  \App\Models\Petugas  $petugas
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id_petugas)
+    public function destroy(Request $request)
     {
-        try {
-            Petugas::where('id_petugas', $id_petugas)->delete();
+        try {            
+            
+            DB::transaction(function () use ($request) {
+                Petugas::where('id_petugas', $request->id_petugas)->delete();
+                    
+                \App\Models\User::find($request->id_users)->delete();
+    
+                return response()->json([
+                    'status'  => true,
+                    'message' => 'Data berhasil di hapus !',
+                ], 200);
+            });
 
-            return response()->json([
-                'status'  => true,
-                'message' => 'Data berhasil di hapus !',
-            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'status'  => false,

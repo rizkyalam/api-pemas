@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Masyarakat;
 use Exception;
+use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class MasyarakatController extends Controller
 {
@@ -17,7 +19,19 @@ class MasyarakatController extends Controller
      */
     public function show_all()
     {
-        $data = Masyarakat::all();
+        $masyarakat = Masyarakat::with('users')->get();
+
+        foreach ($masyarakat as $row) {
+            $data[] = [
+                'id_masyarakat' => $row->id_masyarakat,
+                'id_users'      => $row->users[0]->id,
+                'nik'           => $row->nik,
+                'nama'          => $row->nama,
+                'telp'          => $row->telp,
+                'foto'          => $row->foto,
+                'username'      => $row->users[0]->username,
+            ];
+        }
 
         return response()->json($data, 200);
     }
@@ -28,9 +42,9 @@ class MasyarakatController extends Controller
      * @param int $nik
      * @return \Illuminate\Http\Response
      */
-    public function show_once($nik)
+    public function show_once($id_masyarakat)
     {
-        $data = Masyarakat::firstWhere('nik', $nik);
+        $data = Masyarakat::firstWhere('id_masyarakat', $id_masyarakat);
 
         return response()->json($data);
     }
@@ -51,14 +65,18 @@ class MasyarakatController extends Controller
                 'password1' => 'required|min:4|max:32|same:password2',
                 'password2' => 'required|min:4|max:32|same:password1',
                 'telp'      => 'max:13',
-                'foto'      => 'mimes:jpeg,png,jpg,gif,svg|max:1024'
+                'foto'      => 'required|mimes:jpeg,png,jpg,gif,svg|max:1024'
             ]);
+
+            $imgName = time() . $request->foto->getClientOriginalName();
+
+            $request->foto->move(public_path('img/user'), $imgName);
     
             $data = Masyarakat::create([
                 'nik'  => $request->nik,
                 'nama' => $request->nama,
                 'telp' => $request->telp,
-                'foto' => $request->foto
+                'foto' => $imgName
             ]);
 
             $data->users()->create([
@@ -90,15 +108,16 @@ class MasyarakatController extends Controller
     {
         try {
             $request->validate([
-                'nik'       => 'required',
-                'username'  => 'required|unique:masyarakat,username|max:25',
-                'telp'      => 'max:13'
+                'id_masyarakat' => 'required',
+                'nik'           => 'required',
+                'nama'          => 'required|unique:masyarakat,nama|max:25',
+                'telp'          => 'required|max:13',
             ]);
 
-            Masyarakat::where('nik', $request->nik)->update([
+            Masyarakat::where('id_masyarakat', $request->id_masyarakat)->update([
                 'nik'      => $request->nik,
-                'username' => $request->username,
-                'telp'     => $request->telp
+                'nama'     => $request->nama,
+                'telp'     => $request->telp,
             ]);
 
             return response()->json([
@@ -163,15 +182,23 @@ class MasyarakatController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function destroy($nik)
+    public function destroy(Request $request)
     {
         try {
-            Masyarakat::where('nik', $nik)->delete();
-
-            return response()->json([
-                'status'  => true,
-                'message' => 'Data berhasil di hapus !',
-            ], 200);
+            DB::transaction(function () use ($request) {
+                $masyarakat = Masyarakat::where('id_masyarakat', $request->id_masyarakat)->first();
+    
+                File::delete("img/user/{$masyarakat->foto}");
+    
+                $masyarakat->delete();
+                
+                \App\Models\User::find($request->id_users)->delete();
+    
+                return response()->json([
+                    'status'  => true,
+                    'message' => 'Data berhasil di hapus !',
+                ], 200);
+            });
         } catch (Exception $e) {
             return response()->json([
                 'status'  => false,

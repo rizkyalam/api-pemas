@@ -15,6 +15,7 @@ class Masyarakat extends Model
         'nik',
         'nama',
         'telp',
+        'foto'
     ];
     protected $hidden = [
         'password'
@@ -22,7 +23,7 @@ class Masyarakat extends Model
 
     public function reports()
     {
-        return $this->hasMany(Pengaduan::class, 'nik', 'nik');
+        return $this->hasMany(Pengaduan::class, 'id_masyarakat', 'id_masyarakat');
     }
 
     public function users()
