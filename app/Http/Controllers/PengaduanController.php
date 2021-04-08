@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Masyarakat;
 use App\Models\Pengaduan;
+use App\Models\Petugas;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -70,14 +71,31 @@ class PengaduanController extends Controller
     public function show_once($id_pengaduan)
     {
         $reports = Pengaduan::where('id_pengaduan', $id_pengaduan)->first();
+                            
+        if ($reports->status === 'selesai') {
+            $petugas = Petugas::where('id_petugas', $reports->comment->id_petugas)->first();
 
-        $data = [
-            'id_pengaduan' => $reports->id_pengaduan,
-            'tgl_pengaduan' => date('d-m-Y',strtotime($reports->tgl_pengaduan)),
-            'isi_laporan' => $reports->isi_laporan,
-            'foto' => $reports->foto,
-            'status' => $reports->status,
-        ];
+            $data = [
+                'id_pengaduan' => $reports->id_pengaduan,
+                'tgl_pengaduan' => date('d-m-Y',strtotime($reports->tgl_pengaduan)),
+                'isi_laporan' => $reports->isi_laporan,
+                'foto' => $reports->foto,
+                'status' => $reports->status,
+                'tgl_tanggapan' => $reports->comment->tgl_tanggapan,
+                'tanggapan' => $reports->comment->tanggapan,
+                'validasi'  => $reports->comment->status_laporan,
+                'nama_petugas' => $petugas->nama_petugas
+            ];            
+        } else {
+            $data = [
+                'id_pengaduan' => $reports->id_pengaduan,
+                'tgl_pengaduan' => date('d-m-Y',strtotime($reports->tgl_pengaduan)),
+                'isi_laporan' => $reports->isi_laporan,
+                'foto' => $reports->foto,
+                'status' => $reports->status,
+            ];
+        }
+
 
         return response()->json($data);
     }

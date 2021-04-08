@@ -1,9 +1,11 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\MasyarakatController;
 use App\Http\Controllers\PengaduanController;
 use App\Http\Controllers\PetugasController;
+use App\Http\Controllers\TanggapanController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,7 +32,6 @@ Route::prefix('masyarakat')->group(function () {
     Route::get('search/{id_masyarakat}', [MasyarakatController::class, 'show_once']);
     Route::post('store', [MasyarakatController::class, 'store']);
     Route::post('update/profile', [MasyarakatController::class, 'update_profile']);
-    Route::put('update/password', [MasyarakatController::class, 'update_password']);
     Route::post('delete', [MasyarakatController::class, 'destroy']);
 });
 
@@ -39,7 +40,6 @@ Route::prefix('petugas')->group(function () {
     Route::get('search/{id_petugas}', [PetugasController::class, 'show_once']);
     Route::post('store', [PetugasController::class, 'store']);
     Route::post('update/profile', [PetugasController::class, 'update_profile']);
-    Route::put('update/password', [PetugasController::class, 'update_password']);
     Route::post('delete/', [PetugasController::class, 'destroy']);
 });
 
@@ -63,4 +63,17 @@ Route::group([
     Route::get('all/{id_masyarakat}', [PengaduanController::class, 'show_all']);
     Route::post('store', [PengaduanController::class, 'store']);
     Route::get('search/{id_pengaduan}', [PengaduanController::class, 'show_once']);
+});
+
+Route::group([
+    'prefix' => 'tanggapan'
+], function () {
+    Route::get('all', [TanggapanController::class, 'show_all']);
+    Route::post('store', [TanggapanController::class, 'store']);
+});
+
+Route::group([
+    'prefix' => 'laporan',
+], function () {
+    Route::get('pengaduan', [LaporanController::class, 'show_pengaduan']);
 });

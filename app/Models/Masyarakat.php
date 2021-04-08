@@ -29,5 +29,17 @@ class Masyarakat extends Model
     public function users()
     {
         return $this->morphMany(User::class, 'people');
+    }    
+
+    public function replies()
+    {
+        return $this->hasManyThrough(
+            Tanggapan::class, 
+            Pengaduan::class, 
+            'id_pengaduan', 
+            'id_tanggapan',
+            'id_masyarakat',
+            'id_pengaduan'
+        );
     }
 }

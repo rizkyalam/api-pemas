@@ -22,4 +22,9 @@ class Pengaduan extends Model
     {
         return $this->belongsTo(Masyarakat::class, 'id_masyarakat', 'id_masyarakat');
     }
+
+    public function comment()
+    {
+        return $this->hasOne(Tanggapan::class, 'id_pengaduan', 'id_pengaduan');
+    }
 }

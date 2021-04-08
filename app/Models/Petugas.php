@@ -21,4 +21,9 @@ class Petugas extends Model
     {
         return $this->morphMany(User::class, 'people');
     }
+
+    public function replies()
+    {
+        return $this->hasMany(Tanggapan::class, 'id_petugas', 'id_petugas');
+    }
 }
